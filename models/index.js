@@ -1,4 +1,4 @@
 module.exports = {
-    User: require('Users.js'),
-    Tweet: require('models/Tweets.js')
+    User: require('./Users.js'),
+    Tweet: require('./Tweets.js')
 }

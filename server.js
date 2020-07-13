@@ -5,6 +5,9 @@ const PORT = process.env.PORT || 8080
 
 const app = express()
 
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/twoter",
+    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+
 // for parsing incoming POST data
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
@@ -21,6 +24,7 @@ const db = require('./models')
 
 // endpoints
 app.get('/tweets', async function (req, res) {
+    console.log(`[GET /tweets]`)
     // get the list of tweets
     const userList = await db.User.find({}).populate('tweets')
 
@@ -28,22 +32,43 @@ app.get('/tweets', async function (req, res) {
 })
 
 app.post('/tweets', async function (req, res) {
+    console.log(`[POST] /tweets, body:`, req.body)
+
     // first create a new user if not already exists
-    let postingUser = db.User.find({ name: req.body.name })
-    if (!postingUser._id) {
+    let postingUser;
+    let postingUserMatch = await db.User.find({ name: req.body.name })
+
+    if (postingUserMatch.length == 0) {
+        console.log(` .. user does not exist, creating them!`)
         // create the user
-        postingUser = db.User.create({ name: req.body.name })
+        postingUser = await db.User.create({ name: req.body.name })
+        console.log(` ... added the user, id=${postingUser._id}`)
+    } else {
+        postingUser = postingUserMatch[0]
+        console.log(` ! user already exists, using them, id=${postingUser._id}`)
     }
 
-    // save the tweet
-    let postedTweet = db.Tweet.create({
-        title: req.body.title,
-        thumbnail: req.body.thumbnail
-    })
+    console.log(`.. checking if user is unique:`, postingUser)
 
-    // save the tweet-id to the user list
-    //! BUGBUG: fix PUSH
-    db.User.updateOne({ name: req.body.name }, { $push: { postedTweet._id } })
+    // save the tweet
+    let postedTweet
+    try {
+        postedTweet = await db.Tweet.create({
+            title: req.body.title,
+            thumbnail: req.body.thumbnail
+        })
+        console.log(`.. * created tweet: id=${postedTweet._id}`)
+
+        // save the tweet-id to the user list
+        console.log(` about to add tweet to the users tweet list:`)
+
+        const updateResult = await db.User.updateOne({ name: req.body.name }, { $push: { tweets: postedTweet._id } })
+        console.log(` ... finished adding the tweet to the user: `, updateResult)
+        res.send({ status: true, message: "Successfully added tweet" })
+    } catch (err) {
+        console.log(`x sorry invalid tweet`, err)
+        res.send({ status: false, message: `Sorry unable to create tweet: ${err.messaage}` })
+    }
 })
 
 
