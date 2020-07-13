@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <ul class="list-group">
+        <ul id='tweetList' class="list-group">
             <li class="list-group-item media">
                 <img src="https://photos.gograph.com/thumbs/CSP/CSP841/palm-tree-island-vector-clipart_k26997540.jpg"
                     class="mr-3">
@@ -100,10 +100,83 @@
                 <label for="thumbnail">Tweet Thumbnail</label>
                 <input type="text" class="form-control" id="thumbnail">
             </div>
-            <button type="submit" class="btn btn-primary">Twoweeett</button>
+            <div id='apiMessage' class="alert alert-danger"></div>
+            <button onClick="postTweet()" type="submit" class="btn btn-primary">Twoweeett</button>
         </form>
 
     </div>
+
+    <script>
+        async function apiCall(url, method = 'get', data = {}) {
+            let settings = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            }
+            // only attach the body for put/post
+            if (method === 'post' || method === 'put') {
+                settings.body = JSON.stringify(data)
+            }
+
+            const result = await fetch(url, settings).then(res => res.json())
+
+            /* put the api result message onto the screen as a message if it exists */
+            if (result.status && result.message) {
+                const apiResultEl = document.querySelector('#apiMessage')
+                apiResultEl.innerHTML = result.message
+                apiResultEl.classList.remove('d-none')
+                console.log('showing message: ' + result.message)
+                setTimeout(function () {
+                    apiResultEl.classList.add('d-none')
+                }, 5000)
+            } else if (!result.status && result.message) {
+                alert('Problems: ' + result.message)
+            }
+
+            return result
+        }
+
+        async function postTweet() {
+            const tweetData = {
+                name: document.querySelector('#name').value,
+                location: document.querySelector('#location').value,
+                title: document.querySelector('#title').value,
+                thumbnail: document.querySelector('#thumbnail').value
+            }
+
+            const apiResult = await apiCall('/tweets', 'post', tweetData)
+
+            listTweets()
+        }
+
+        async function listTweets() {
+            const userList = await apiCall('/tweets')
+            const tweetListEl = document.querySelector('#tweetList')
+
+            tweetListEl.innerHTML = ''
+
+            userList.forEach(function (user) {
+                tweetListEl.innerHTML += `
+                <li class="list-group-item"><h2>${user.name}</h2>
+                `
+                // go through and show the tweets
+                if (user.tweets) {
+                    user.tweets.forEach(function (tweet) {
+                        tweetListEl.innerHTML += `
+                        <div class="media">
+                            <img src="${tweet.thumbnail}" class="mr-3">
+                            <div class="media-body">
+                                <h5 class="mt-0">${tweet.title}</h5>
+                            </div>
+                        </div>
+                        `
+                    })
+                }
+            })
+        }
+
+        // run when the page loads so we get a list of tweet
+        listTweets()
+    </script>
 </body>
 
 </html>
