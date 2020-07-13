@@ -1,0 +1,12 @@
+User
+----
+name
+location
+tweets: [ their list of tweets ]
+createdAt
+
+Tweets
+------
+title
+thumbnail
+createdAt

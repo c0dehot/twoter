@@ -30,6 +30,12 @@
             background-size: auto;
             height: 200px;
         }
+
+        small {
+            display: block;
+            color: grey;
+            float: right;
+        }
     </style>
     <div class="container">
 
@@ -69,13 +75,29 @@
                 <img src="https://photos.gograph.com/thumbs/CSP/CSP841/palm-tree-island-vector-clipart_k26997540.jpg"
                     class="mr-3">
                 <div class="media-body">
-                    <h5 class="mt-0">Saquib's Island</h5>
+                    <h5 class="mt-0">User Name @ Location</h5>
                     Some more notes here
+                    <small>Posted 5 July, 2020 @ 10:10am</small>
                 </div>
             </li>
         </ul>
 
-
+        <br />
+        <form>
+            <div class="form-group">
+                <label for="userName">User Name</label>
+                <input type="text" class="form-control" id="userName">
+            </div>
+            <div class="form-group">
+                <label for="userTweet">User Tweet</label>
+                <input type="text" class="form-control" id="userTweet">
+            </div>
+            <div class="form-group">
+                <label for="tweetThumbnail">Tweet Thumbnail</label>
+                <input type="text" class="form-control" id="tweetThumbnail">
+            </div>
+            <button type="submit" class="btn btn-primary">Twoweeett</button>
+        </form>
 
     </div>
 </body>
