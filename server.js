@@ -22,6 +22,13 @@ app.use(express.static('public'))
 // db.Tweets = require( 'models/Tweets.js' )
 const db = require('./models')
 
+// clear our prior data
+async function initDb() {
+    await db.User.deleteMany()
+    await db.Tweet.deleteMany()
+}
+initDb()
+
 // endpoints
 app.get('/tweets', async function (req, res) {
     console.log(`[GET /tweets]`)
@@ -36,7 +43,7 @@ app.post('/tweets', async function (req, res) {
 
     // first create a new user if not already exists
     let postingUser;
-    let postingUserMatch = await db.User.find({ name: req.body.name })
+    let postingUserMatch = await db.User.find({ name: req.body.name }).limit(1)
 
     if (postingUserMatch.length == 0) {
         console.log(` .. user does not exist, creating them!`)
