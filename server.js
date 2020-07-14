@@ -20,14 +20,16 @@ app.use(express.static('public'))
 // const db = {}
 // db.User = require( 'models/Users.js' )
 // db.Tweets = require( 'models/Tweets.js' )
-const db = require('./models')
+const db = require('./models');
 
-// clear our prior data
-async function initDb() {
+// clear our prior data (IIFE aka immediately invoked function expression)
+//! ** Note, I had to have the comma after the models in 23, else it was 
+//!    viewing this paranthesized items as being parameters for the above require!
+(async function () {
+    console.log(`.. clearing old users/tweets`)
     await db.User.deleteMany()
     await db.Tweet.deleteMany()
-}
-initDb()
+})()
 
 // endpoints
 app.get('/tweets', async function (req, res) {
@@ -40,27 +42,25 @@ app.get('/tweets', async function (req, res) {
 
 app.post('/tweets', async function (req, res) {
     console.log(`[POST] /tweets, body:`, req.body)
-
-    // first create a new user if not already exists
-    let postingUser;
-    let postingUserMatch = await db.User.find({ name: req.body.name }).limit(1)
-
-    if (postingUserMatch.length == 0) {
-        console.log(` .. user does not exist, creating them!`)
-        // create the user
-        postingUser = await db.User.create({ name: req.body.name })
-        console.log(` ... added the user, id=${postingUser._id}`)
-    } else {
-        postingUser = postingUserMatch[0]
-        console.log(` ! user already exists, using them, id=${postingUser._id}`)
-    }
-
-    console.log(`.. checking if user is unique:`, postingUser)
-
-    // save the tweet
-    let postedTweet
     try {
-        postedTweet = await db.Tweet.create({
+        // first create a new user if not already exists
+        let postingUser;
+        let postingUserMatch = await db.User.find({ name: req.body.name }).limit(1)
+
+        if (postingUserMatch.length == 0) {
+            console.log(` .. user does not exist, creating them!`)
+            // create the user
+            postingUser = await db.User.create({ name: req.body.name })
+            console.log(` ... added the user, id=${postingUser._id}`)
+        } else {
+            postingUser = postingUserMatch[0]
+            console.log(` ! user already exists, using them, id=${postingUser._id}`)
+        }
+
+        console.log(`.. checking if user is unique:`, postingUser)
+
+        // save the tweet
+        let postedTweet = await db.Tweet.create({
             title: req.body.title,
             thumbnail: req.body.thumbnail
         })
@@ -74,7 +74,7 @@ app.post('/tweets', async function (req, res) {
         res.send({ status: true, message: "Successfully added tweet" })
     } catch (err) {
         console.log(`x sorry invalid tweet`, err)
-        res.send({ status: false, message: `Sorry unable to create tweet: ${err.messaage}` })
+        res.send({ status: false, message: `Sorry unable to create tweet: ${err.message}` })
     }
 })
 

@@ -100,8 +100,8 @@
                 <label for="thumbnail">Tweet Thumbnail</label>
                 <input type="text" class="form-control" id="thumbnail">
             </div>
-            <div id='apiMessage' class="alert alert-danger"></div>
-            <button onClick="postTweet()" type="submit" class="btn btn-primary">Twoweeett</button>
+            <div id='apiMessage' class="alert alert-warning d-none"></div>
+            <button onClick="postTweet(event)" type="submit" class="btn btn-primary">Twoweeett</button>
         </form>
 
     </div>
@@ -135,7 +135,9 @@
             return result
         }
 
-        async function postTweet() {
+        async function postTweet(event) {
+            event.preventDefault()
+
             const tweetData = {
                 name: document.querySelector('#name').value,
                 location: document.querySelector('#location').value,
